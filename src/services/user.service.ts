@@ -4,7 +4,6 @@ import {
   getAsync,
   getAllAsync,
   client,
-  delAsync,
 } from "./../connections/redis.connection";
 
 const hash = "user";
@@ -15,11 +14,11 @@ export const createUser = (newUser: User): Promise<number> => {
 
 export const updateUser = createUser;
 
-export const deleteUser = (id: string) => {
+export const deleteUser = (id: string): Promise<number> => {
   return new Promise((resolve, reject) => {
-    client.HDEL("user", id, (err, res) => {
-      console.log(err, res);
-      resolve(true);
+    client.HDEL(hash, id, (err, res) => {
+      if (err) reject(err);
+      else resolve(res);
     });
   });
 };

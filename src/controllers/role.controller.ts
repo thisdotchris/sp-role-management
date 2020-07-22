@@ -1,5 +1,12 @@
 import { Request, Response, Router, IRouter, NextFunction } from "express";
-import { createRole, getRole, getAll, parse } from "./../services/role.service";
+import {
+  createRole,
+  getRole,
+  getAll,
+  parse,
+  deleteRole,
+  updateRole,
+} from "./../services/role.service";
 import { Role } from "./../classes/role.class";
 import { DTORole } from "./../dto/role.dto";
 import { ParamDTORole } from "../dto/param.dto";
@@ -48,3 +55,41 @@ RoleRouter.post("", async (req: Request, res: Response, next: NextFunction) => {
     return next(error);
   }
 });
+
+RoleRouter.delete(
+  "/:id",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const param: { id?: string } = req.params;
+      if (param.id) {
+        res.status(200).json({ data: await deleteRole(param.id) });
+      } else {
+        res.status(200).json({ data: "ok" });
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
+
+RoleRouter.patch(
+  "",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const body: DTORole = req.body;
+      if (body.id) {
+        const prev: Role = await parse(getRole(body.id));
+        const newRole = new Role(prev);
+        newRole.id = prev.id;
+        newRole.access = body.access;
+        newRole.name = body.name;
+        await updateRole(newRole);
+        res.status(200).json({ message: "updated successfully..." });
+      } else {
+        res.status(200).json({ message: null });
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+);

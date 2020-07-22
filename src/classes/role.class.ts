@@ -7,7 +7,7 @@ export class Role implements IRole {
   name: string;
   access: { [key: string]: IAccess };
   constructor(role: IRole) {
-    this.id = uniqid();
+    this.id = !role.id ? uniqid() : role.id;
     this.name = role.name;
     this.access = role.access;
   }

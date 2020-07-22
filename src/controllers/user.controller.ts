@@ -5,6 +5,7 @@ import {
   getUser,
   parse,
   updateUser,
+  deleteUser,
 } from "./../services/user.service";
 import * as roleService from "./../services/role.service";
 import { DTOUser } from "./../dto/user.dto";
@@ -82,7 +83,23 @@ UserRouter.patch(
       user.username = body.username;
       // update
       await updateUser(user);
-      res.status(200).json({ data: user });
+      res.status(200).json({ message: "updated successfully..." });
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
+
+UserRouter.delete(
+  "/:id",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const param: { id?: string } = req.params;
+      if (param.id) {
+        res.status(200).json({ data: await deleteUser(param.id) });
+      } else {
+        res.status(200).json({ data: null });
+      }
     } catch (error) {
       return next(error);
     }

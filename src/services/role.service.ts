@@ -3,6 +3,7 @@ import {
   setAsync,
   getAsync,
   getAllAsync,
+  client,
 } from "./../connections/redis.connection";
 
 const hash = "role";
@@ -17,6 +18,19 @@ export const createRole = async (role: Role | Role[]): Promise<void> => {
     await setAsync([hash, role.id, JSON.stringify(role)]);
   }
   return;
+};
+
+export const updateRole = (role: Role): Promise<number> => {
+  return setAsync([hash, role.id, JSON.stringify(role)]);
+};
+
+export const deleteRole = (id: string): Promise<number> => {
+  return new Promise((resolve, reject) => {
+    client.HDEL(hash, id, (err, res) => {
+      if (err) reject(err);
+      else resolve(res);
+    });
+  });
 };
 
 export const getRole = (id: string): Promise<string> => {
