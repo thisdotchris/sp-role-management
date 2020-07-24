@@ -4,7 +4,7 @@ import { RoleRouter } from "./controllers/role.controller";
 import { AccountRouter } from "./controllers/account.controller";
 import accountMiddleware from "./middlewares/account.middleware";
 
-app.use(accountMiddleware);
 app.use("/accounts", AccountRouter);
+app.use(accountMiddleware);
 app.use("/users", UserRouter);
 app.use("/roles", RoleRouter);

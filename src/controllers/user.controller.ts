@@ -14,6 +14,10 @@ import { IRole } from "../interfaces/role.interface";
 import { ParamDTOUser } from "./../dto/param.dto";
 import { IUpdateUser } from "./../dto/user.update";
 import { Role } from "../classes/role.class";
+import {
+  pushUserCreated,
+  removeUserCreated,
+} from "./../services/account.service";
 
 export const UserRouter: IRouter = Router();
 
@@ -50,19 +54,28 @@ UserRouter.get(
 UserRouter.post("", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const body: DTOUser = req.body;
-    const parsedRole: IRole = await roleService.parse(
-      roleService.getRole(body.role)
-    );
-    const newUser = new User(
-      body.username,
-      body.fullname,
-      body.password,
-      parsedRole
-    );
-    await createUser(newUser);
-    res
-      .status(200)
-      .json({ message: "added new user successfully", data: newUser });
+    const accountid: string | string[] | undefined = req.headers.accountid;
+    if (body && accountid) {
+      const parsedRole: IRole = await roleService.parse(
+        roleService.getRole(body.role)
+      );
+      const newUser = new User(
+        body.username,
+        body.fullname,
+        body.password,
+        parsedRole
+      );
+      await createUser(newUser);
+      await pushUserCreated(
+        typeof accountid === "string" ? accountid : accountid[0],
+        newUser.id
+      );
+      res
+        .status(200)
+        .json({ message: "added new user successfully", data: newUser });
+    } else {
+      return next(new Error("undefined body or accountid..."));
+    }
   } catch (error) {
     return next(error);
   }
@@ -95,8 +108,14 @@ UserRouter.delete(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const param: { id?: string } = req.params;
-      if (param.id) {
-        res.status(200).json({ data: await deleteUser(param.id) });
+      const accountid: string | string[] | undefined = req.headers.accountid;
+      if (param.id && accountid) {
+        await removeUserCreated(
+          typeof accountid === "string" ? accountid : accountid[0],
+          param.id
+        );
+        await deleteUser(param.id);
+        res.status(200).json({ data: "deleted" });
       } else {
         res.status(200).json({ data: null });
       }
